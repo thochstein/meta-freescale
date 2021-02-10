@@ -40,7 +40,6 @@ PROVIDES_OPENVX       = ""
 PROVIDES_OPENVX_mx8   = "virtual/libopenvx"
 PROVIDES_OPENVX_mx8mm = ""
 PROVIDES += " \
-    imx-gpu-viv \
     libgal-imx \
     opencl-headers \
     opencl-clhpp \
@@ -101,10 +100,11 @@ python __anonymous () {
 USE_X11 = "${@bb.utils.contains("DISTRO_FEATURES", "x11", "yes", "no", d)}"
 USE_WL = "${@bb.utils.contains("DISTRO_FEATURES", "wayland", "yes", "no", d)}"
 
-# Inhibit warnings about files being stripped.
-INHIBIT_PACKAGE_STRIP = "1"
+# The packaged binaries have been stripped of debug info, so disable
+# operations accordingly.
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
-INSANE_SKIP_${BPN} += "already-stripped"
+INHIBIT_PACKAGE_STRIP = "1"
+INHIBIT_SYSROOT_STRIP = "1"
 
 # FIXME: The provided binary doesn't provide soname. If in future BSP
 # release the libraries are fixed, we can drop this hack.
@@ -285,14 +285,14 @@ FILES_libegl-imx-dev = "${includedir}/EGL ${includedir}/KHR ${libdir}/pkgconfig/
 FILES_libgal-imx = "${libdir}/libGAL${SOLIBS} ${libdir}/libGAL_egl${SOLIBS}"
 FILES_libgal-imx-dev = "${libdir}/libGAL${SOLIBSDEV} ${includedir}/HAL"
 RDEPENDS_libgal-imx += "kernel-module-imx-gpu-viv"
-RDEPENDS_libgal-imx += "${@bb.utils.contains('PACKAGECONFIG', 'valgrind', 'valgrind', '', d)}"
+RDEPENDS_libgal-imx += "${@bb.utils.filter('PACKAGECONFIG', 'valgrind', d)}"
 RPROVIDES_libgal-imx += "libgal-imx"
 INSANE_SKIP_libgal-imx += "build-deps"
 
 FILES_libvsc-imx = "${libdir}/libVSC${SOLIBS}"
 
-FILES_libgbm-imx_mx8           = "${libdir}/libgbm*${REALSOLIBS} ${libdir}/libgbm${SOLIBSDEV} ${libdir}/libgbm_viv${SOLIBSDEV}"
-FILES_libgbm-imx-dev_mx8       = "${libdir}/pkgconfig/gbm.pc ${includedir}/gbm.h"
+FILES_libgbm-imx_mx8 = "${libdir}/libgbm${REALSOLIBS} ${libdir}/libgbm${SOLIBSDEV} ${libdir}/libgbm_viv${SOLIBSDEV}"
+FILES_libgbm-imx-dev_mx8 = "${libdir}/pkgconfig/gbm.pc ${includedir}/gbm.h"
 RDEPENDS_libgbm-imx_append_mx8 = " libdrm"
 INSANE_SKIP_libgbm-imx += "dev-so"
 
